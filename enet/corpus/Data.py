@@ -3,6 +3,7 @@ from collections import Counter, OrderedDict
 
 import six
 import torch
+import os
 from torchtext.data import Field, Example, Pipeline, Dataset
 
 from enet.corpus.Corpus import Corpus
@@ -191,18 +192,27 @@ class ACE2005Dataset(Corpus):
 
     def parse_example(self, path, fields):
         examples = []
-
-        with open(path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if len(line) == 0:
-                    continue
-                jl = json.loads(line, encoding="utf-8")
-                for js in jl:
-                    ex = self.parse_sentence(js, fields)
+        for file_name in os.listdir(path):
+            with open(os.path.join(path,file_name), "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if len(line) == 0:
+                        continue
+                    jl = json.loads(line, encoding="utf-8")
+                    ex = self.parse_sentence(jl, fields)
                     if ex is not None:
                         examples.append(ex)
-
+        # with open(path, "r", encoding="utf-8") as f:
+        #     string = ''
+        #     for line in f:
+        #         line = line.strip()
+        #         if len(line) == 0:
+        #             continue
+        #         string += line
+        #     jl = json.loads(string, encoding="utf-8")
+        #     ex = self.parse_sentence(jl, fields)
+        #     if ex is not None:
+        #         examples.append(ex)
         return examples
 
     def parse_sentence(self, js, fields):

@@ -1,5 +1,4 @@
-[
-    {
+{
         "penn-treebank":"(ROOT (S (S (NP (NP (DT The) (NN skeleton)) (PP (IN of) (NP (DT a) (JJ second) (NN baby)))) (VP (VBZ has) (VP (VBN been) (VP (VBN found) (PP (IN at) (NP (NP (DT a) (JJ rural) (NNP Wisconsin) (NN home)) (SBAR (WHADVP (WRB where)) (S (NP (NP (DT a) (JJ 22-year-old) (NN woman) (POS 's)) (JJ dead) (NN infant)) (VP (VBD was) (VP (VBN discovered) (PP (IN in) (NP (DT a) (JJ blue) (NN plastic) (NN container))) (NP-TMP (NNP June) (CD 8)))))))))))) (, ,) (NP (NNS officials)) (VP (VBD said) (NP-TMP (NNP Monday))) (. .)))",
         "stanford-colcc":[
             "root/dep=32/gov=-1",
@@ -342,4 +341,3 @@
             }
         ]
     }
-]

@@ -25,23 +25,23 @@ class EDModel(Model):
         # Word Embedding Layer
         self.wembeddings = EmbeddingLayer(embedding_size=(hyps["wemb_size"], hyps["wemb_dim"]),
                                           embedding_matrix=embeddingMatrix,
-                                          fine_tune=hyps["wemb_ft"],
-                                          dropout=hyps["wemb_dp"],
+                                          # fine_tune=hyps["wemb_ft"],
+                                          # dropout=hyps["wemb_dp"],
                                           device=device)
 
         # Positional Embedding Layer
         self.psembeddings = EmbeddingLayer(embedding_size=(hyps["psemb_size"], hyps["psemb_dim"]),
-                                           dropout=hyps["psemb_dp"],
+                                           # dropout=hyps["psemb_dp"],
                                            device=device)
 
         # POS-Tagging Embedding Layer
         self.pembeddings = EmbeddingLayer(embedding_size=(hyps["pemb_size"], hyps["pemb_dim"]),
-                                          dropout=hyps["pemb_dp"],
+                                          # dropout=hyps["pemb_dp"],
                                           device=device)
 
         # Entity Label Embedding Layer
         self.eembeddings = MultiLabelEmbeddingLayer(embedding_size=(hyps["eemb_size"], hyps["eemb_dim"]),
-                                                    dropout=hyps["eemb_dp"],
+                                                    # dropout=hyps["eemb_dp"],
                                                     device=device)
 
         # Bi-LSTM Encoder
@@ -51,7 +51,7 @@ class EDModel(Model):
                                              hyps["eemb_dim"],
                                   hidden_size=hyps["lstm_dim"],
                                   num_layers=hyps["lstm_layers"],
-                                  dropout=hyps["lstm_dp"],
+                                  # dropout=hyps["lstm_dp"],
                                   bidirectional=True,
                                   device=device)
 

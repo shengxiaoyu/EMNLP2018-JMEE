@@ -20,28 +20,33 @@ from enet.util import log
 
 class EERunner(object):
     def __init__(self):
+        base_dir = r'E:\pyWorkspace\EMNLP2018-JMEE'
+        data_dir = os.path.join(base_dir,'samples_label')
         parser = argparse.ArgumentParser(description="neural networks trainer")
-        parser.add_argument("--test", help="validation set")
-        parser.add_argument("--train", help="training set", required=False)
-        parser.add_argument("--dev", help="development set", required=False)
-        parser.add_argument("--webd", help="word embedding", required=False)
+        parser.add_argument("--test", help="validation set",default=os.path.join(data_dir,'test'))
+        parser.add_argument("--train", help="training set", required=False,default=os.path.join(data_dir,'train'))
+        parser.add_argument("--dev", help="development set", required=False,default=os.path.join(data_dir,'dev'))
+        # parser.add_argument("--test", help="validation set",default=r'E:\pyWorkspace\EMNLP2018-JMEE\ace-05-splits\sample.json')
+        # parser.add_argument("--train", help="validation set",default=r'E:\pyWorkspace\EMNLP2018-JMEE\ace-05-splits\sample.json')
+        # parser.add_argument("--dev", help="validation set",default=r'E:\pyWorkspace\EMNLP2018-JMEE\ace-05-splits\sample.json')
+        parser.add_argument("--webd", help="word embedding", required=False,default=os.path.join(os.path.join(base_dir,'glove'),'vectors.txt'))
 
-        parser.add_argument("--batch", help="batch size", default=128, type=int)
-        parser.add_argument("--epochs", help="n of epochs", default=sys.maxsize, type=int)
+        parser.add_argument("--batch", help="batch size", default=32, type=int)
+        parser.add_argument("--epochs", help="n of epochs", default=15, type=int)
 
         parser.add_argument("--seed", help="RNG seed", default=42, type=int)
-        parser.add_argument("--optimizer", default="adam")
+        parser.add_argument("--optimizer", default="adadelta")
         parser.add_argument("--lr", default=1e-3, type=float)
         parser.add_argument("--l2decay", default=0, type=float)
         parser.add_argument("--maxnorm", default=3, type=float)
 
-        parser.add_argument("--out", help="output model path", default="out")
+        parser.add_argument("--out", help="output model path", default=os.path.join(base_dir,'out'))
         parser.add_argument("--finetune", help="pretrained model path")
-        parser.add_argument("--earlystop", default=999999, type=int)
-        parser.add_argument("--restart", default=999999, type=int)
+        parser.add_argument("--earlystop", default=10, type=int)
+        parser.add_argument("--restart", default=10, type=int)
 
         parser.add_argument("--device", default="cpu")
-        parser.add_argument("--hps", help="model hyperparams", required=False)
+        parser.add_argument("--hps", help="model hyperparams",default="{'wemb_dim': 300, 'wemb_ft': True, 'wemb_dp': 0.5, 'pemb_dim': 50, 'pemb_dp': 0.5, 'eemb_dim': 50, 'eemb_dp': 0.5, 'psemb_dim': 50, 'psemb_dp': 0.5, 'lstm_dim': 220, 'lstm_layers': 1, 'lstm_dp': 0, 'gcn_et': 3, 'gcn_use_bn': True, 'gcn_layers': 3, 'gcn_dp': 0.5, 'sa_dim': 300, 'use_highway': True, 'loss_alpha': 5}", required=False)
 
         self.a = parser.parse_args()
 
@@ -69,6 +74,7 @@ class EERunner(object):
         print("Running on", self.a.device)
         self.set_device(self.a.device)
 
+        # 此方法使得np的random有预见性，当seed数字一样时，randon的结果相同
         np.random.seed(self.a.seed)
         torch.manual_seed(self.a.seed)
 
@@ -115,6 +121,7 @@ class EERunner(object):
                                   keep_events=0)
 
         if self.a.webd:
+            #使用外部词向量
             pretrained_embedding = Vectors(self.a.webd, ".", unk_init=partial(torch.nn.init.uniform_, a=-0.15, b=0.15))
             WordsField.build_vocab(train_set.WORDS, dev_set.WORDS, vectors=pretrained_embedding)
         else:
@@ -158,6 +165,7 @@ class EERunner(object):
         self.a.label_weight = torch.ones([len(LabelField.vocab.itos)]) * 5
         self.a.label_weight[consts.O_LABEL] = 1.0
 
+        #eval执行一个表达式，并返回值
         self.a.hps = eval(self.a.hps)
         if "wemb_size" not in self.a.hps:
             self.a.hps["wemb_size"] = len(WordsField.vocab.itos)
@@ -226,8 +234,8 @@ class EERunner(object):
             tester=tester,
             parser=self.a,
             other_testsets={
-                "dev 1/1": dev_set1,
-                "test 1/1": test_set1,
+                "dev_1_1": dev_set1,
+                "test_1_1": test_set1,
             }
         )
         log('Done!')

@@ -5,7 +5,7 @@ import torch.nn as nn
 
 
 class DynamicLSTM(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers=1, bias=True, batch_first=True, dropout=0,
+    def __init__(self, input_size, hidden_size, num_layers=1, bias=True, batch_first=True, dropout=0.5,
                  bidirectional=False, device=torch.device("cpu")):
         """
         Dynamic LSTM which can hold variable length sequence, use like TensorFlow's RNN(input, length...).
