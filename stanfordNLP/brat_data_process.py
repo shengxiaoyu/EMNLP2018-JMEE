@@ -112,9 +112,7 @@ def formLabelData(labelFilePath,savePath):
         if (events == None or len(events) == 0):
             return
 
-        strs = []
-        for event in events:
-            strs.append(conver_event_to_sample2(nlp, event))
+        strs = conver_event_to_sample2(nlp, events)
 
         # 存储
         theSavePath = ''
@@ -153,37 +151,62 @@ def del_br(event):
                 update_index(argu_entity, br_index, -2)
         br_index = sentence.find('\r\n')
     event.sentence = sentence
-def conver_event_to_sample2(client,event):
-    del_br(event)
+def conver_event_to_sample2(client,events):
+    last_sentence = ''
+    last_words = None
+    json_strs = []
     annotators = ['tokenize', 'pos', 'lemma', 'ner', 'depparse']
-    sentence = event.sentence
-    ann = client.annotate(sentence, output_format='json', annotators=annotators)
-    ann_sentence = ann['sentences'][0]
-    stanford_colcc = []
-    for item in ann_sentence['enhancedPlusPlusDependencies']:
-        #root设为-1，全部减一
-        stanford_colcc.append(item['dep']+'/dep='+str(item['governor']-1)+'/gov='+str(item['dependent']-1))
-    golden_entity_mentions = []
-    for entity in ann_sentence['entitymentions']:
-        golden_entity_mentions.append({'start':entity['tokenBegin'],'end':entity['tokenEnd'],'entity-type':entity['ner'],'text':entity['text']})
-    lemma = []
-    words = []
-    pos_tags = []
-    for item in ann_sentence['tokens']:
-        lemma.append(item['lemma'])
-        words.append(item['word'])
-        pos_tags.append(item['pos'])
-    event_mention = simple_event(event,words)
-    result_dict = {}
-    result_dict['stanford-colcc'] = stanford_colcc
-    result_dict['golden-entity-mentions'] = golden_entity_mentions
-    result_dict['lemma'] = lemma
-    result_dict['words'] = words
-    result_dict['pos-tags'] = pos_tags
-    result_dict['golden-event-mentions'] = [event_mention.__dict__]
+    result_dict = None
+    for event in events:
+        del_br(event)
+        sentence = event.sentence
+        if(sentence==last_sentence):
+            '''同一个句子,多个事件'''
+            event_mention = simple_event(event, last_words)
+            result_dict['golden-event-mentions'].append(event_mention.__dict__)
+        else:
+            '''新句子，现把上一个句子的结果存入'''
+            if(result_dict!=None):
+                json_strs.append(json.dumps(result_dict, ensure_ascii=False))
 
-    string = json.dumps(result_dict, ensure_ascii=False)
-    return string
+            '''开始新的句子处理'''
+            result_dict = {}
+            ann = client.annotate(sentence, output_format='json', annotators=annotators)
+            ann_sentence = ann['sentences'][0]
+
+            '''依赖树'''
+            stanford_colcc = []
+            for item in ann_sentence['enhancedPlusPlusDependencies']:
+                #root设为-1，全部减一
+                stanford_colcc.append(item['dep']+'/dep='+str(item['governor']-1)+'/gov='+str(item['dependent']-1))
+            result_dict['stanford-colcc'] = stanford_colcc
+
+            '''ner'''
+            golden_entity_mentions = []
+            for entity in ann_sentence['entitymentions']:
+                golden_entity_mentions.append({'start':entity['tokenBegin'],'end':entity['tokenEnd'],'entity-type':entity['ner'],'text':entity['text']})
+            result_dict['golden-entity-mentions'] = golden_entity_mentions
+
+            '''lemma,words,pos_tags'''
+            lemma = []
+            words = []
+            pos_tags = []
+            for item in ann_sentence['tokens']:
+                lemma.append(item['lemma'])
+                words.append(item['word'])
+                pos_tags.append(item['pos'])
+            result_dict['lemma'] = lemma
+            result_dict['words'] = words
+            result_dict['pos-tags'] = pos_tags
+
+            event_mention = simple_event(event,words)
+            result_dict['golden-event-mentions'] = [event_mention.__dict__]
+
+            last_sentence = sentence
+            last_words = words
+
+    json_strs.append(json.dumps(result_dict, ensure_ascii=False))
+    return json_strs
 
 def convert_event_to_sample(nlp,event):
     del_br(event)
