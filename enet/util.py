@@ -184,6 +184,8 @@ def run_over_data(model, optimizer, data_iter, MAX_STEP, need_backward, tester, 
         y_, mask, ae_logits, ae_logits_key = model.forward(words, x_len, postags, entitylabels, adjm, entities,
                                                            label_i2s)
         loss_ed = model.calculate_loss_ed(y_, mask, y, weight)
+
+        #检测事件参数，这里只会检测已经预测出的触发词和预先抽取出来的entity
         if len(ae_logits_key) > 0:
             loss_ae, predicted_events = model.calculate_loss_ae(ae_logits, ae_logits_key, events, x_len.size()[0])
             loss = loss_ed + hyps["loss_alpha"] * loss_ae
@@ -232,5 +234,7 @@ def run_over_data(model, optimizer, data_iter, MAX_STEP, need_backward, tester, 
     running_loss = running_loss / cnt
     ep, er, ef = tester.calculate_report(all_y, all_y_, transform=False)
     ap, ar, af = tester.calculate_sets(all_events, all_events_)
+    aep, aer, aef = tester.calcluate_tri_argu(all_events, all_events_)
     print()
-    return running_loss, ep, er, ef, ap, ar, af
+    # return running_loss, ep, er, ef, ap, ar, af
+    return running_loss, ep, er, ef,aep, aer, aef

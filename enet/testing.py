@@ -60,6 +60,7 @@ class EDTester():
         return segs
 
     def calculate_sets(self, y, y_):
+        '''这里评估事件预测的效果，事件参数预测正确个数（触发词和参数两两组合完全吻合+1）/总事件参数个数=正确率，事件参数预测正确个数/预测出的总事件参数个数=召回率'''
         ct, p1, p2 = 0, 0, 0
         for sent, sent_ in zip(y, y_):
             for key, value in sent.items():
@@ -75,6 +76,43 @@ class EDTester():
 
             for key, value in sent_.items():
                 p2 += len(value)
+
+        if ct == 0 or p1 == 0 or p2 == 0:
+            return 0.0, 0.0, 0.0
+        else:
+            p = 1.0 * ct / p2
+            r = 1.0 * ct / p1
+            f1 = 2.0 * p * r / (p + r)
+            return p, r, f1
+
+
+    def calcluate_tri_argu(self,y,y_):
+        '''自定义评估结果：触发词和参数各占一分'''
+        ct, p1, p2 = 0, 0, 0
+        for sent, sent_ in zip(y, y_):
+            for key, value in sent.items():
+                '''遍历正确事件集，每个触发词，每个参数各占一分'''
+
+                #触发词一分
+                p1 += 1
+                for item in value:
+                    #每个参数一分
+                    p1 += 1
+                if key not in sent_:
+                    continue
+                # matched sentences,触发词正确加一分
+                ct += 1
+                arguments = value
+                arguments_ = sent_[key]
+                for item, item_ in zip(arguments, arguments_):
+                    if item[2] == item_[2]:
+                        ct += 1
+
+            for key, value in sent_.items():
+                '''遍历整个预测集，每个触发词，参数各占一分'''
+                p2 += 1
+                for item in value:
+                    p2 += 1
 
         if ct == 0 or p1 == 0 or p2 == 0:
             return 0.0, 0.0, 0.0

@@ -161,7 +161,7 @@ class EDModel(Model):
                     print(e_st, e_ed)
                     print(xx[i, e_st:e_ed, ].mean(dim=0).size())
                     exit(-1)
-
+            #如果预测出存在触发词，则将触发词和预先抽出来的entity和触发词两两组合，并链接出一个ae_hidder向量作为分类logit，判断这个entity是否属于该触发词的某个role
             for st in predicted_event_triggers:
                 ed, trigger_type_str = predicted_event_triggers[st]
                 event_tensor = xx[i, st:ed, ].mean(dim=0)  # (d')
