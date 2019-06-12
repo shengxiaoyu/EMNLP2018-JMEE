@@ -23,9 +23,9 @@ class EERunner(object):
         base_dir = r'E:\pyWorkspace\EMNLP2018-JMEE'
         data_dir = os.path.join(base_dir,'samples_label')
         parser = argparse.ArgumentParser(description="neural networks trainer")
-        parser.add_argument("--test", help="validation set",default=os.path.join(data_dir,'train'))
+        parser.add_argument("--test", help="validation set",default=os.path.join(data_dir,'test'))
         parser.add_argument("--train", help="training set", required=False,default=os.path.join(data_dir,'train'))
-        parser.add_argument("--dev", help="development set", required=False,default=os.path.join(data_dir,'train'))
+        parser.add_argument("--dev", help="development set", required=False,default=os.path.join(data_dir,'dev'))
         # parser.add_argument("--test", help="validation set",default=r'E:\pyWorkspace\EMNLP2018-JMEE\ace-05-splits\sample.json')
         # parser.add_argument("--train", help="validation set",default=r'E:\pyWorkspace\EMNLP2018-JMEE\ace-05-splits\sample.json')
         # parser.add_argument("--dev", help="validation set",default=r'E:\pyWorkspace\EMNLP2018-JMEE\ace-05-splits\sample.json')

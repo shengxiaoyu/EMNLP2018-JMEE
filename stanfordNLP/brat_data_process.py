@@ -137,18 +137,18 @@ def del_br(event):
     # 去换行符
     br_index = sentence.find('\r\n')
 
-    def update_index(entity, field_index, value):
-        if (entity.getBegin() > field_index):
+    def update_index(entity, field_index, value,baseIndex):
+        if (entity.getBegin()-baseIndex > field_index):
             entity.beginIndex = entity.getBegin() + value
-        if (entity.getEnd() > field_index):
+        if (entity.getEnd()-baseIndex > field_index):
             entity.endIndex = entity.getEnd() + value
 
     while (br_index != -1):
         sentence = sentence[0:br_index] + sentence[br_index + 2:]
-        update_index(event.getTrigger(), br_index, -2)
+        update_index(event.getTrigger(), br_index, -2,event.getBeginLineIndex())
         if (event.getArguments() != None):
             for argu_entity in event.getArguments():
-                update_index(argu_entity, br_index, -2)
+                update_index(argu_entity, br_index, -2,event.getBeginLineIndex())
         br_index = sentence.find('\r\n')
     event.sentence = sentence
 def conver_event_to_sample2(client,events):
@@ -386,7 +386,9 @@ def main():
     save_path = r'E:\pyWorkspace\EMNLP2018-JMEE\samples_label'
     formLabelData(
         labelFilePath=os.path.join(brat_base_path, 'labeled'),
+        # labelFilePath=r'C:\Users\13314\Desktop\Bi-LSTM+CRF\brat\labeled\test',
         savePath=save_path)
+        # savePath=r'C:\Users\13314\Desktop\Bi-LSTM+CRF\brat\labeled')
 
 if __name__ == '__main__':
     main()
