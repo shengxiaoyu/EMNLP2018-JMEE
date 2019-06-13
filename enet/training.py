@@ -7,6 +7,11 @@ from enet.util import run_over_data
 
 
 def train(model, train_set, dev_set, test_set, optimizer_constructor, epochs, tester, parser, other_testsets):
+    #记录准确率，
+    total_result = os.path.join(parser.out,'total_result.txt')
+    fw = open(total_result,'w',encoding='utf8')
+
+
     # build batch on cpu
     train_iter = BucketIterator(train_set, batch_size=parser.batch, train=False, shuffle=True, device=-1,
                                 sort_key=lambda x: len(x.POSTAGS))
@@ -49,6 +54,13 @@ def train(model, train_set, dev_set, test_set, optimizer_constructor, epochs, te
               "\ntraining ae p: ", training_ae_p,
               " training ae r: ", training_ae_r,
               " training ae f1: ", training_ae_f1)
+        fw.write("\nEpoch", i + 1, " training loss: ", training_loss,
+              "\ntraining ed p: ", training_ed_p,
+              " training ed r: ", training_ed_r,
+              " training ed f1: ", training_ed_f1,
+              "\ntraining ae p: ", training_ae_p,
+              " training ae r: ", training_ae_r,
+              " training ae f1: ", training_ae_f1)
         parser.writer.add_scalar('train/loss', training_loss, i)
         parser.writer.add_scalar('train/ed/p', training_ed_p, i)
         parser.writer.add_scalar('train/ed/r', training_ed_r, i)
@@ -82,6 +94,13 @@ def train(model, train_set, dev_set, test_set, optimizer_constructor, epochs, te
               "\ndev ae p: ", dev_ae_p,
               " dev ae r: ", dev_ae_r,
               " dev ae f1: ", dev_ae_f1)
+        fw.write("\nEpoch", i + 1, " dev loss: ", dev_loss,
+              "\ndev ed p: ", dev_ed_p,
+              " dev ed r: ", dev_ed_r,
+              " dev ed f1: ", dev_ed_f1,
+              "\ndev ae p: ", dev_ae_p,
+              " dev ae r: ", dev_ae_r,
+              " dev ae f1: ", dev_ae_f1)
         parser.writer.add_scalar('dev/loss', dev_loss, i)
         parser.writer.add_scalar('dev/ed/p', dev_ed_p, i)
         parser.writer.add_scalar('dev/ed/r', dev_ed_r, i)
@@ -109,6 +128,13 @@ def train(model, train_set, dev_set, test_set, optimizer_constructor, epochs, te
                                                                                   "test_epoch_%d.txt" % (
                                                                                       i + 1)))
         print("\nEpoch", i + 1, " test loss: ", test_loss,
+              "\ntest ed p: ", test_ed_p,
+              " test ed r: ", test_ed_r,
+              " test ed f1: ", test_ed_f1,
+              "\ntest ae p: ", test_ae_p,
+              " test ae r: ", test_ae_r,
+              " test ae f1: ", test_ae_f1)
+        fw.write("\nEpoch", i + 1, " test loss: ", test_loss,
               "\ntest ed p: ", test_ed_p,
               " test ed r: ", test_ed_r,
               " test ed f1: ", test_ed_f1,
@@ -167,7 +193,13 @@ def train(model, train_set, dev_set, test_set, optimizer_constructor, epochs, te
           "\ntest ae p: ", test_ae_p,
           " test ae r: ", test_ae_r,
           " test ae f1: ", test_ae_f1)
-
+    fw.write("\nFinally test loss: ", test_loss,
+          "\ntest ed p: ", test_ed_p,
+          " test ed r: ", test_ed_r,
+          " test ed f1: ", test_ed_f1,
+          "\ntest ae p: ", test_ae_p,
+          " test ae r: ", test_ae_r,
+          " test ae f1: ", test_ae_f1)
     for name, additional_test_set in other_testsets.items():
         additional_test_iter = BucketIterator(additional_test_set, batch_size=parser.batch, train=False, shuffle=True,
                                               device=-1,
@@ -196,5 +228,12 @@ def train(model, train_set, dev_set, test_set, optimizer_constructor, epochs, te
               " additional ae test p: ", additional_test_ae_p,
               " additional ae test r: ", additional_test_ae_r,
               " additional ae test f1: ", additional_test_ae_f1)
-
+        fw.write("\nFor ", name, ", additional test loss: ", additional_test_loss,
+              " additional ed test p: ", additional_test_ed_p,
+              " additional ed test r: ", additional_test_ed_r,
+              " additional ed test f1: ", additional_test_ed_f1,
+              " additional ae test p: ", additional_test_ae_p,
+              " additional ae test r: ", additional_test_ae_r,
+              " additional ae test f1: ", additional_test_ae_f1)
+    fw.close()
     print("Training Done!")

@@ -32,7 +32,7 @@ class EERunner(object):
         parser.add_argument("--webd", help="word embedding", required=False,default=os.path.join(os.path.join(base_dir,'glove'),'vectors.txt'))
 
         parser.add_argument("--batch", help="batch size", default=32, type=int)
-        parser.add_argument("--epochs", help="n of epochs", default=5, type=int)
+        parser.add_argument("--epochs", help="n of epochs", default=15, type=int)
 
         parser.add_argument("--seed", help="RNG seed", default=42, type=int)
         parser.add_argument("--optimizer", default="adadelta")
@@ -238,6 +238,7 @@ class EERunner(object):
                 "test_1_1": test_set1,
             }
         )
+        model.save_model(self.a.out)
         log('Done!')
 
 

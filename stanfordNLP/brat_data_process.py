@@ -77,10 +77,10 @@ def formLabelData(labelFilePath,savePath):
                     beginIndexOfTheLine = cursor
                     endIndexOfTheLine = cursor + len(line)
 
-                    # 标注起止范围都在在当前句子内
                     if (endIndexOfTheLine <= event.beginIndex):
                         cursor = endIndexOfTheLine
                         continue
+                    # 标注起止范围都在在当前句子内
                     if (beginIndexOfTheLine <= event.beginIndex and event.beginIndex <= endIndexOfTheLine
                             and beginIndexOfTheLine <= event.endIndex and event.endIndex <= endIndexOfTheLine):
                         event.addSentence(line)
@@ -96,12 +96,18 @@ def formLabelData(labelFilePath,savePath):
                           event.endIndex <= endIndexOfTheLine):
                         event.addSentence(line)
                         break
+
+                        #当前句子整个再事件范围内
+                    elif(beginIndexOfTheLine>event.beginIndex and endIndexOfTheLine<event.endIndex):
+                        event.addSentence(line)
+
                     cursor = endIndexOfTheLine
         return events
     # 分割成一个句子只标注一个事件
     def handlerSingleFile(nlp, filePath):
         if (filePath.find('.ann') == -1):
             return
+
         # 查看源文件是否存在，如果不存在直接跳过
         originFile = os.path.join(filePath, filePath.replace('.ann', '.txt'))
         if (not os.path.exists(originFile)):
@@ -134,15 +140,16 @@ def formLabelData(labelFilePath,savePath):
             handlerSingleFile(client,labelFilePath)
 def del_br(event):
     sentence = ''.join(event.getSentences())
-    # 去换行符
-    br_index = sentence.find('\r\n')
-
+    sentence = sentence.replace('。','，')
     def update_index(entity, field_index, value,baseIndex):
         if (entity.getBegin()-baseIndex > field_index):
             entity.beginIndex = entity.getBegin() + value
         if (entity.getEnd()-baseIndex > field_index):
             entity.endIndex = entity.getEnd() + value
 
+    # 去换行符
+    br_index = sentence.find('\r\n')
+    #去除换行符
     while (br_index != -1):
         sentence = sentence[0:br_index] + sentence[br_index + 2:]
         update_index(event.getTrigger(), br_index, -2,event.getBeginLineIndex())
@@ -150,6 +157,18 @@ def del_br(event):
             for argu_entity in event.getArguments():
                 update_index(argu_entity, br_index, -2,event.getBeginLineIndex())
         br_index = sentence.find('\r\n')
+
+    #去除空格
+    blank_index = sentence.find(' ')
+    while(blank_index!=-1):
+        sentence = sentence[0:blank_index] + sentence[blank_index + 1:]
+        update_index(event.getTrigger(), blank_index, -1, event.getBeginLineIndex())
+        if (event.getArguments() != None):
+            for argu_entity in event.getArguments():
+                update_index(argu_entity, blank_index, -1, event.getBeginLineIndex())
+        blank_index = sentence.find(' ')
+
+
     event.sentence = sentence
 def conver_event_to_sample2(client,events):
     last_sentence = ''
@@ -335,7 +354,11 @@ class simple_event(object):
         trigger_entity = event.getTrigger()
         self.trigger['start'],self.trigger['end'] = sentence_index_to_word_index(words,trigger_entity.getBegin()-event.getBeginLineIndex(),trigger_entity.getEnd()-event.getBeginLineIndex())
         self.trigger['text'] = trigger_entity.getValue()
-
+        source_trigger = trigger_entity.getValue()
+        new_trigger = ''.join(words[self.trigger['start']:self.trigger['end']])
+        if(source_trigger!=new_trigger):
+            print('前后触发词不完全匹配')
+        self.trigger['start'],self.trigger['end'] = sentence_index_to_word_index(words,trigger_entity.getBegin()-event.getBeginLineIndex(),trigger_entity.getEnd()-event.getBeginLineIndex())
         self.arguments = []
         for argu_entity in event.getArguments():
             argu = {}
@@ -348,6 +371,9 @@ class simple_event(object):
 
 #把在原句中的index转为分词后词语的index
 def sentence_index_to_word_index(words,start,end):
+
+    #此end是不包含的，我们要找触发词的最后一个字符所在的word，再取后一个index，这样能确保完全纳入
+    end -=1
 
     word_start = 0
     word_end = 0
@@ -362,7 +388,7 @@ def sentence_index_to_word_index(words,start,end):
         if(start>=begin_index and start<end_index):
             word_start = index
         if(end>=begin_index and end<end_index):
-            word_end = index
+            word_end = index+1
             break
         begin_index = end_index
     if(word_end==word_start):

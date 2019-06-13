@@ -1,3 +1,5 @@
+import os
+
 import torch
 import torch.nn as nn
 
@@ -39,8 +41,12 @@ class Model(nn.Module):
         state_dict = self.state_dict()
         for key, value in state_dict.items():
             state_dict[key] = value.cpu()
+        if(os.path.isdir(path)):
+            path = os.path.join(path,'save_model.pt')
         torch.save(state_dict, path)
 
     def load_model(self, path):
+        if (os.path.isdir(path)):
+            path = os.path.join(path, 'save_model.pt')
         state_dict = torch.load(path)
         self.load_state_dict(state_dict)
