@@ -20,8 +20,10 @@ from enet.util import log
 
 class EERunner(object):
     def __init__(self):
-        base_dir = r'E:\pyWorkspace\EMNLP2018-JMEE'
-        data_dir = os.path.join(base_dir,'samples_label')
+        #base_dir = r'E:\pyWorkspace\EMNLP2018-JMEE'
+        #data_dir = os.path.join(base_dir,'samples_label')
+        base_dir = '/root/lstm_crf/code/EMNLP2018-JMEE'
+        data_dir = '/root/lstm_crf/data/samples_label'
         parser = argparse.ArgumentParser(description="neural networks trainer")
         parser.add_argument("--test", help="validation set",default=os.path.join(data_dir,'test'))
         parser.add_argument("--train", help="training set", required=False,default=os.path.join(data_dir,'train'))
